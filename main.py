@@ -1,4 +1,5 @@
-from data_fetchers.denton_fetcher import test_connection
+from data_fetchers.denton_fetcher import fetch_full_crime_data
 
 if __name__ == "__main__":
-    test_connection()
+    df = fetch_full_crime_data(save_local=False)
+    print(df.head())
