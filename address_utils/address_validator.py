@@ -2,27 +2,19 @@ import pandas as pd
 from geopy.geocoders import GoogleV3
 from geopy.exc import GeocoderTimedOut, GeocoderQuotaExceeded
 import time
-
+import os
 
 def validate_addresses_google(
-        df: pd.DataFrame,
-        address_column: str = "address",
-        api_key: str = "",
-        delay: float = 0.2,
-        limit: int = None
+    df: pd.DataFrame,
+    address_column: str = "address",
+    api_key: str = "",
+    delay: float = 0.2,
+    limit: int = None,
+    output_file: str = "data/geocode_current_run.csv"
 ) -> pd.DataFrame:
     """
-    Geocode addresses using Google Maps API and return a new DataFrame with results.
-
-    Args:
-        df (pd.DataFrame): The input DataFrame.
-        address_column (str): Column name containing the address.
-        api_key (str): Google Maps API key.
-        delay (float): Delay between API calls (to avoid quota issues).
-        limit (int): Max number of rows to validate (for testing). None = full dataset.
-
-    Returns:
-        pd.DataFrame: A new DataFrame with original address, lat, lon, and status.
+    Geocode addresses using Google Maps API and return a DataFrame of new results.
+    Saves progress row-by-row to avoid losing work.
     """
     if not api_key:
         raise ValueError("You must provide a valid Google Maps API key.")
@@ -31,35 +23,47 @@ def validate_addresses_google(
     results = []
 
     subset = df if limit is None else df.head(limit)
+    total = len(subset)
+
+    # Ensure 'data/' folder exists
+    os.makedirs("data", exist_ok=True)
 
     for i, row in subset.iterrows():
         address = row[address_column]
+        print(f"[{len(results) + 1}/{total}] Geocoding: {address}")
+
         try:
             location = geolocator.geocode(address)
             if location:
-                results.append({
+                result = {
                     "original_index": i,
                     "address": address,
                     "latitude": location.latitude,
                     "longitude": location.longitude,
                     "status": "VALID"
-                })
+                }
             else:
-                results.append({
+                result = {
                     "original_index": i,
                     "address": address,
                     "latitude": None,
                     "longitude": None,
                     "status": "NOT_FOUND"
-                })
+                }
         except (GeocoderTimedOut, GeocoderQuotaExceeded):
-            results.append({
+            result = {
                 "original_index": i,
                 "address": address,
                 "latitude": None,
                 "longitude": None,
                 "status": "ERROR"
-            })
-        time.sleep(delay)  # be polite to the API
+            }
+
+        results.append(result)
+
+        # ✅ Real-time cache saving: keep overwriting the current batch
+        pd.DataFrame(results).to_csv(output_file, index=False)
+
+        time.sleep(delay)
 
     return pd.DataFrame(results)
