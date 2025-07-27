@@ -1,4 +1,7 @@
-pandas
-requests
-geopy
-dotenv
+pandas~=2.3.1
+requests~=2.32.4
+geopy~=2.4.1
+dotenv~=0.9.9
+
+python-dotenv~=1.1.1
+requests-cache~=1.2.1
