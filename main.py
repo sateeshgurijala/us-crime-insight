@@ -52,7 +52,8 @@ if __name__ == "__main__":
         )
 
         # Step 7: Save full updated cache
-        updated_cache = pd.concat([cache_df, new_geocoded_df], ignore_index=True)
+        frames = [df for df in [cache_df, new_geocoded_df] if not df.empty]
+        updated_cache = pd.concat(frames, ignore_index=True)
         save_geocode_cache(updated_cache)
 
         print(" Geocoding complete. Updated cache saved.")
