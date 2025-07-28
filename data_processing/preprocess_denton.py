@@ -2,7 +2,8 @@
 
 import pandas as pd
 import re
-
+from config.settings import PROCESSED_DATA_DIR
+import os
 from logs.preprocess_logger import append_preprocess_log
 
 def basic_eda(df: pd.DataFrame) -> pd.DataFrame:
@@ -65,5 +66,12 @@ def basic_eda(df: pd.DataFrame) -> pd.DataFrame:
     # No data drops or filters — all rows remain intact
     # Later we can log unexpected formats to a separate file for QA
     append_preprocess_log(df, dataset_name="denton_raw.csv")
+
+    # Save the preprocessed DataFrame to the processed directory
+
+    os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
+    processed_path = PROCESSED_DATA_DIR / "denton_processed.csv"
+    df.to_csv(processed_path, index=False)
+    print(f"Processed data saved to: {processed_path}")
 
     return df

@@ -2,7 +2,7 @@
 
 from data_fetchers.denton_fetcher import fetch_full_crime_data
 from address_utils.address_validator import validate_addresses_google
-from address_utils.geocode_cache_handler import load_geocode_cache, save_geocode_cache
+from address_utils.geocode_cache_handler import load_geocode_cache, save_geocode_cache, get_uncached_addresses
 from data_processing.preprocess_denton import basic_eda
 from config.settings import GEOCODE_CURRENT_RUN_FILE
 from dotenv import load_dotenv
@@ -30,7 +30,8 @@ if __name__ == "__main__":
 
     # Step 4: Extract unique new addresses from dataset
     all_addresses = df[address_col].dropna().unique()
-    uncached_addresses = [addr for addr in all_addresses if addr not in cached_addresses]
+    uncached_df = get_uncached_addresses(df, address_col, cache_df)
+    uncached_addresses = uncached_df[address_col].dropna().unique()
 
     print(f"Total rows in dataset: {len(df)}")
     print(f"Unique addresses in dataset: {len(all_addresses)}")
