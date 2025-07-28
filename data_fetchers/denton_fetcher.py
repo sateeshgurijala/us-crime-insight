@@ -35,7 +35,7 @@ def fetch_full_crime_data(save_local=False) -> pd.DataFrame:
 
         if save_local:
             os.makedirs(RAW_DATA_DIR, exist_ok=True)
-            file_path = os.path.join(RAW_DATA_DIR, "denton_raw.csv")
+            file_path = RAW_DATA_DIR / "denton_raw.csv"
             df.to_csv(file_path, index=False)
             print(f"Saved raw dataset to: {file_path}")
 
@@ -43,4 +43,3 @@ def fetch_full_crime_data(save_local=False) -> pd.DataFrame:
         return df
     else:
         raise Exception(f"Failed to download data: HTTP {response.status_code}")
-

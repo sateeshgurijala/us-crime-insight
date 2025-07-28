@@ -1,6 +1,7 @@
 import pandas as pd
 from geopy.geocoders import GoogleV3
 from geopy.exc import GeocoderTimedOut, GeocoderQuotaExceeded
+from config.settings import GEOCODE_CURRENT_RUN_FILE
 import time
 import os
 
@@ -10,7 +11,7 @@ def validate_addresses_google(
     api_key: str = "",
     delay: float = 0.2,
     limit: int = None,
-    output_file: str = "data/geocode_current_run.csv"
+    output_file: str = str(GEOCODE_CURRENT_RUN_FILE)
 ) -> pd.DataFrame:
     """
     Geocode addresses using Google Maps API and return a DataFrame of new results.
@@ -26,14 +27,14 @@ def validate_addresses_google(
     total = len(subset)
 
     # Ensure 'data/' folder exists
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(GEOCODE_CURRENT_RUN_FILE.parent, exist_ok=True)
 
     for i, row in subset.iterrows():
         address = row[address_column]
         print(f"[{len(results) + 1}/{total}] Geocoding: {address}")
 
         try:
-            location = geolocator.geocode(address)
+            location = geolocator.geocode(str(address))
             if location:
                 result = {
                     "original_index": i,
